@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#100d1b" />
+    <title>Rad der Challenges</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- ============ RAD-ANSICHT ============ -->
+    <main id="wheel-view" class="app-shell">
+      <header class="site-header">
+        <a class="brand" href="./" aria-label="Rad der Challenges – Startseite">
+          <img src="title-mark.svg" alt="" />
+          <span><strong>RAD DER</strong><em>CHALLENGES</em></span>
+        </a>
+        <span class="overlay-coming">OBS-Overlay · Coming soon</span>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">VANILLA MINECRAFT • ZUFALLS-CHALLENGE</p>
+          <h1>Was musst du<br /><span>als Nächstes finden?</span></h1>
+          <p class="intro">Drehe das Rad und erhalte ein sammelbares Vanilla-Item oder einen Block. Ganz ohne Crafting.</p>
+          <p id="pool-status" class="pool-status" aria-live="polite"></p>
+        </div>
+
+        <div class="wheel-stage">
+          <div class="pointer" aria-hidden="true"></div>
+          <button id="spin-button" class="wheel" type="button" aria-label="Glücksrad drehen">
+            <span class="wheel-slices" aria-hidden="true"></span>
+            <span class="wheel-center"><small>DRÜCK</small><b>SPIN</b></span>
+          </button>
+          <p class="wheel-hint">Klicke auf das Rad zum Drehen</p>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="Rad-Einstellungen">
+        <div class="control-group worlds-group">
+          <div class="control-heading"><span>Welten filtern</span><small>Keine Auswahl = alle Welten</small></div>
+          <div id="world-filters" class="filter-options">
+            <label class="filter-chip overworld"><input type="checkbox" value="overworld" /> <span>Nur Oberwelt-Items</span></label>
+            <label class="filter-chip nether"><input type="checkbox" value="nether" /> <span>Nur Nether-Items</span></label>
+            <label class="filter-chip end"><input type="checkbox" value="end" /> <span>Nur End-Items</span></label>
+          </div>
+          <p class="combination-note">Mehrere Welten aktivieren: Oberwelt + Nether, Oberwelt + End oder End + Nether.</p>
+          <p class="anleitung">Anleitung: Aktiviere eine oder mehrere Welten, um das Rad nur mit Items aus diesen Welten zu füllen. Ohne Auswahl sind alle Welten enthalten.</p>
+        </div>
+        <div class="control-group draw-group">
+          <div class="control-heading"><span>Wiederholungen</span></div>
+          <label class="switch"><input id="hide-drawn" type="checkbox" /><span class="switch-track"></span><span>Bereits gezogene Items ausblenden</span></label>
+          <button id="clear-history" class="text-button" type="button">Gezogene Items zurücksetzen</button>
+          <p class="anleitung">Anleitung: Blende bereits gezogene Items aus, damit jede Challenge nur einmal vorkommt – bis du die Historie zurücksetzt.</p>
+        </div>
+        <div class="control-group items-group">
+          <div class="control-heading"><span>Itemliste</span><small>Alle Items verwalten</small></div>
+          <p class="items-group-copy">Durchsuche jedes Item und jeden Block aus Minecraft und lege einzeln fest, ob es im Rad gezogen werden kann.</p>
+          <a id="open-items" class="primary-button items-link" href="#items">Zur Itemliste</a>
+          <p class="anleitung">Anleitung: Öffne die Itemliste, um per Suche oder Buchstaben-Sprungnavigation jedes Item zu finden und über den Schalter ins Rad aufzunehmen oder auszuschließen.</p>
+        </div>
+        <div class="control-group overlay-settings coming-soon-card">
+          <div class="control-heading"><span>OBS-Overlay</span><small>COMING SOON</small></div>
+          <p>Das Streamer-Overlay mit Hotkeys folgt in einem späteren Update.</p>
+          <p class="anleitung">Anleitung: Sobald verfügbar, blendet das Overlay deine letzte Challenge direkt im Stream ein – einrichtbar über einen Hotkey.</p>
+        </div>
+      </section>
+
+      <section class="recent-section">
+        <div><p class="eyebrow">LETZTE DREHUNGEN</p><h2>Deine Challenge-Historie</h2></div>
+        <ol id="history-list" class="history-list"></ol>
+      </section>
+    </main>
+
+    <!-- ============ ITEMLISTE-ANSICHT ============ -->
+    <main id="items-view" class="app-shell items-shell" hidden>
+      <header class="site-header items-header">
+        <a class="brand" href="#" aria-label="Rad der Challenges – Startseite">
+          <img src="title-mark.svg" alt="" />
+          <span><strong>RAD DER</strong><em>CHALLENGES</em></span>
+        </a>
+        <a id="back-to-wheel" class="overlay-link" href="#">← Zurück zum Rad</a>
+      </header>
+
+      <section class="items-intro">
+        <p class="eyebrow">ALLE ITEMS &amp; BLÖCKE</p>
+        <h1>Die komplette Itemliste</h1>
+        <p class="intro">Jedes Item und jeder Block aus Minecraft – alphabetisch sortiert. Suche gezielt (z. B. „Diamant“ zeigt alle Diamant-Items), filtere nach Typ oder Welt, und entscheide je Item, ob es im Rad gezogen werden kann.</p>
+        <p class="anleitung">Anleitung: Nutze die Suchleiste, um nach Namen oder Kategorien zu suchen. Über die Filter grenzt du nach Block/Item und Welt ein. Der Schalter rechts an jedem Eintrag bestimmt, ob das Item ziehbar (an) oder ausgeschlossen (aus) ist. Totems, Shulkerschalen, Nethersterne und Schatzkarten sind enthalten, aber standardmäßig deaktiviert.</p>
+      </section>
+
+      <section class="items-toolbar">
+        <div class="items-search-wrap">
+          <input id="items-search" type="search" class="items-search" placeholder="Item oder Block suchen …" autocomplete="off" />
+        </div>
+        <div class="items-filters">
+          <select id="filter-type" class="items-select" aria-label="Nach Typ filtern">
+            <option value="all">Alle Typen</option>
+            <option value="block">Nur Blöcke</option>
+            <option value="item">Nur Items</option>
+          </select>
+          <select id="filter-world" class="items-select" aria-label="Nach Welt filtern">
+            <option value="all">Alle Welten</option>
+            <option value="overworld">Oberwelt</option>
+            <option value="nether">Nether</option>
+            <option value="end">End</option>
+            <option value="misc">Sonstige</option>
+          </select>
+          <select id="filter-state" class="items-select" aria-label="Nach Status filtern">
+            <option value="all">Alle Status</option>
+            <option value="on">Nur ziehbare</option>
+            <option value="off">Nur ausgeschlossene</option>
+          </select>
+        </div>
+        <button id="reset-items" class="text-button" type="button">Auswahl zurücksetzen</button>
+      </section>
+
+      <p id="items-count" class="items-count" aria-live="polite"></p>
+
+      <nav id="letter-nav" class="letter-nav" aria-label="Alphabet-Sprungnavigation"></nav>
+
+      <div id="items-list" class="items-list"></div>
+    </main>
+
+    <dialog id="win-dialog" class="win-dialog">
+      <button id="close-dialog" class="dialog-close" type="button" aria-label="Gewinn schließen">×</button>
+      <p class="eyebrow">DEINE NÄCHSTE CHALLENGE</p>
+      <div id="win-icon" class="win-icon" aria-hidden="true">◆</div>
+      <h2 id="win-name">Diamant</h2>
+      <p id="win-world" class="win-world">Oberwelt</p>
+      <button id="spin-again" class="primary-button" type="button">Nochmal drehen</button>
+    </dialog>
+
+    <script src="items-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
