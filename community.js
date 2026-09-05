@@ -6,7 +6,7 @@
 (function () {
   const cfg = window.SUPABASE_CONFIG;
   const isConfigured =
-    cfg && cfg.url && !cfg.url.includes('DEIN-PROJEKT') && cfg.anonKey && !cfg.anonKey.includes('DEIN-ANON');
+    cfg && cfg.url && !cfg.url.includes('https://tlpithftbxbgpfrhuujz.supabase.co') && cfg.anonKey && !cfg.anonKey.includes('sb_publishable_pl6q7KzpjIyFZ4LFuslptg_fHhdT6-V');
 
   const communityEls = document.querySelectorAll('.community-feature');
 
