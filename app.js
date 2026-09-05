@@ -61,8 +61,13 @@
   }
 
   /* Gemeinsamer Ziehpool: Items/Blöcke UND Mobs zusammen, damit das Rad auch
-     "Finde/Zähme/Besiege dieses Mob"-Challenges ziehen kann. */
-  const ALL_POOL_ITEMS = (typeof MOB_ITEMS !== 'undefined') ? MASTER_ITEMS.concat(MOB_ITEMS) : MASTER_ITEMS;
+     "Finde/Zähme/Besiege dieses Mob"-Challenges ziehen kann. Als Funktion (nicht als
+     einmalig gebautes Array), damit später via Supabase nachgeladene Community-Items
+     (die community.js direkt in MASTER_ITEMS/MOB_ITEMS hineinschiebt) sofort mitgezogen
+     werden können, ohne dass die Seite neu geladen werden muss. */
+  function getAllPoolItems() {
+    return (typeof MOB_ITEMS !== 'undefined') ? MASTER_ITEMS.concat(MOB_ITEMS) : MASTER_ITEMS;
+  }
 
   /* =====================================================================
      RAD (Wheel)
@@ -84,11 +89,14 @@
     /* ---------- Drehsound (Web Audio API, keine externe Audiodatei nötig) ---------- */
     let audioCtx = null;
     function getAudioCtx() {
-      if (!audioCtx) {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (Ctx) audioCtx = new Ctx();
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return null;
+      if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new Ctx();
       }
-      if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
       return audioCtx;
     }
     function playSpinSound() {
@@ -98,7 +106,7 @@
       const now = ctx.currentTime;
 
       // Whirr: gefilterter Rauschton, der abklingt wie ein sich verlangsamendes Rad.
-      const bufferSize = ctx.sampleRate * duration;
+      const bufferSize = Math.round(ctx.sampleRate * duration);
       const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
       const data = buffer.getChannelData(0);
       for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
@@ -140,7 +148,7 @@
 
     function itemWorlds(item) { return item.worlds; }
     function pool() {
-      return ALL_POOL_ITEMS.filter(item => isIncluded(item)).filter(item => {
+      return getAllPoolItems().filter(item => isIncluded(item)).filter(item => {
         const correctWorld = !state.worlds.length || itemWorlds(item).some(w => state.worlds.includes(w));
         return correctWorld && (!state.hideDrawn || !state.drawn.includes(item.id));
       });
@@ -181,13 +189,27 @@
       // Fixe Drehung: Das Rad dreht sich bei jedem Spin exakt gleich (immer 7 volle
       // Umdrehungen in dieselbe Richtung, gleiche Dauer/Kurve aus dem CSS) – nur das
       // gewonnene Item ist zufällig, nicht die Optik der Drehung selbst.
-      // Rotation bleibt außerdem im 360°-Raster beschränkt (Fix: vorher wuchs der Wert
-      // unbegrenzt und die Ziersegmente liefen dadurch aus dem 45°-Raster der
-      // Farbsegmente – das erzeugte den "Ruckler"-Bug).
+      // WICHTIG: currentRotation wird NIE auf < 360 zurückgesetzt (kein "% 360" mehr).
+      // Fix für einen echten Bug: 7 volle Umdrehungen sind ein glattes Vielfaches von
+      // 360°, d.h. mit einem Reset landete der neue Zielwert nach dem 1. Spin immer
+      // wieder exakt auf demselben CSS-Wert wie zuvor (z.B. immer wieder "2520deg").
+      // Identische Werte lösen aber KEINEN neuen CSS-Transition-Übergang aus – das Rad
+      // stand danach optisch still, obwohl im Hintergrund weitergezählt wurde. Deshalb
+      // läuft der Winkel jetzt unbegrenzt weiter hoch (2520°, 5040°, 7560°, …) – jeder
+      // Wert ist neu, jede Drehung wird also zuverlässig animiert.
       const FULL_TURNS = 7;
-      currentRotation = (currentRotation % 360) + FULL_TURNS * 360;
+      currentRotation += FULL_TURNS * 360;
       wheel.style.transform = `rotate(${currentRotation}deg)`;
-      playSpinSound();
+      // Der Sound darf niemals den Spin-Ablauf blockieren: Manche Browser drosseln oder
+      // sperren die Web Audio API (z.B. Autoplay-Regeln, Tab im Hintergrund, o.Ä.).
+      // Ohne dieses try/catch hätte ein Fehler hier die komplette Funktion abgebrochen,
+      // BEVOR der Timeout gesetzt wird – das Rad wäre danach dauerhaft "hängen"
+      // geblieben (spinning bliebe für immer true, Button dauerhaft deaktiviert).
+      try {
+        playSpinSound();
+      } catch (err) {
+        console.warn('Drehsound konnte nicht abgespielt werden:', err);
+      }
       window.setTimeout(() => {
         spinning = false;
         win(item);
@@ -257,8 +279,15 @@
     const letterNav = $('#letter-nav');
     const resetButton = $('#reset-items');
 
-    const sorted = [...MASTER_ITEMS].sort((a, b) => a.name.localeCompare(b.name, 'de'));
-    const normCache = new Map(sorted.map(item => [item.id, `${item.name} ${item.en}`.toLowerCase()]));
+    // sorted/normCache werden bei jedem render() neu gebaut (nicht nur einmal beim
+    // Start), damit später asynchron nachgeladene Community-Items (Supabase) sofort
+    // auftauchen, sobald die Itemliste geöffnet/aktualisiert wird.
+    let sorted = [];
+    let normCache = new Map();
+    function rebuildIndex() {
+      sorted = [...MASTER_ITEMS].sort((a, b) => a.name.localeCompare(b.name, 'de'));
+      normCache = new Map(sorted.map(item => [item.id, `${item.name} ${item.en}`.toLowerCase()]));
+    }
 
     function matches(item) {
       const q = searchInput.value.trim().toLowerCase();
@@ -279,6 +308,7 @@
     }
 
     function render() {
+      rebuildIndex();
       const results = sorted.filter(matches);
       const total = MASTER_ITEMS.length;
       const activeCount = MASTER_ITEMS.filter(isIncluded).length;
@@ -364,8 +394,12 @@
     const letterNav = $('#mob-letter-nav');
     const resetButton = $('#reset-mobs');
 
-    const sorted = [...MOB_ITEMS].sort((a, b) => a.name.localeCompare(b.name, 'de'));
-    const normCache = new Map(sorted.map(item => [item.id, `${item.name} ${item.en}`.toLowerCase()]));
+    let sorted = [];
+    let normCache = new Map();
+    function rebuildIndex() {
+      sorted = [...MOB_ITEMS].sort((a, b) => a.name.localeCompare(b.name, 'de'));
+      normCache = new Map(sorted.map(item => [item.id, `${item.name} ${item.en}`.toLowerCase()]));
+    }
 
     function matches(item) {
       const q = searchInput.value.trim().toLowerCase();
@@ -385,6 +419,7 @@
     }
 
     function render() {
+      rebuildIndex();
       const results = sorted.filter(matches);
       const total = MOB_ITEMS.length;
       const activeCount = MOB_ITEMS.filter(isIncluded).length;
@@ -461,22 +496,31 @@
     const wheelView = $('#wheel-view');
     const itemsView = $('#items-view');
     const mobsView = $('#mobs-view');
+    const addContentView = $('#add-content-view');
+    const adminView = $('#admin-view');
     if (!wheelView || !itemsView) return;
 
+    const ROUTES = {
+      items: itemsView,
+      mobs: mobsView,
+      'add-content': addContentView,
+      admin: adminView,
+    };
+
     function applyRoute() {
-      const route = location.hash === '#mobs' ? 'mobs' : location.hash === '#items' ? 'items' : 'wheel';
-      wheelView.hidden = route !== 'wheel';
-      itemsView.hidden = route !== 'items';
-      if (mobsView) mobsView.hidden = route !== 'mobs';
-      if (route === 'items') {
-        window.renderItemsView?.();
-        itemsView.scrollTop = 0;
-        window.scrollTo(0, 0);
-      } else if (route === 'mobs') {
-        window.renderMobsView?.();
-        mobsView.scrollTop = 0;
+      const key = location.hash.replace('#', '');
+      const activeView = ROUTES[key] || null;
+      wheelView.hidden = Boolean(activeView);
+      Object.values(ROUTES).forEach(view => {
+        if (view) view.hidden = view !== activeView;
+      });
+      if (activeView) {
+        activeView.scrollTop = 0;
         window.scrollTo(0, 0);
       }
+      if (key === 'items') window.renderItemsView?.();
+      if (key === 'mobs') window.renderMobsView?.();
+      if (key === 'admin') window.renderAdminView?.();
     }
     window.addEventListener('hashchange', applyRoute);
     $$('.back-to-wheel-link').forEach(link =>
