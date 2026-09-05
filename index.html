@@ -60,6 +60,12 @@
           <a id="open-items" class="primary-button items-link" href="#items">Zur Itemliste</a>
           <p class="anleitung">Anleitung: Öffne die Itemliste, um per Suche oder Buchstaben-Sprungnavigation jedes Item zu finden und über den Schalter ins Rad aufzunehmen oder auszuschließen.</p>
         </div>
+        <div class="control-group items-group">
+          <div class="control-heading"><span>Mobliste</span><small>Alle Mobs verwalten</small></div>
+          <p class="items-group-copy">Durchsuche jedes Mob (inkl. seltener Varianten wie linkshändige Skelette oder geladene Creeper) sowie eigene Custom-Mobs und lege fest, ob es im Rad gezogen werden kann.</p>
+          <a id="open-mobs" class="primary-button items-link" href="#mobs">Zur Mobliste</a>
+          <p class="anleitung">Anleitung: Funktioniert genau wie die Itemliste – suchen, filtern und per Schalter ins Rad aufnehmen oder ausschließen.</p>
+        </div>
         <div class="control-group overlay-settings coming-soon-card">
           <div class="control-heading"><span>OBS-Overlay</span><small>COMING SOON</small></div>
           <p>Das Streamer-Overlay mit Hotkeys folgt in einem späteren Update.</p>
@@ -80,7 +86,7 @@
           <img src="title-mark.svg" alt="" />
           <span><strong>RAD DER</strong><em>CHALLENGES</em></span>
         </a>
-        <a id="back-to-wheel" class="overlay-link" href="#">← Zurück zum Rad</a>
+        <a id="back-to-wheel" class="overlay-link back-to-wheel-link" href="#">← Zurück zum Rad</a>
       </header>
 
       <section class="items-intro">
@@ -123,6 +129,56 @@
       <div id="items-list" class="items-list"></div>
     </main>
 
+    <!-- ============ MOBLISTE-ANSICHT (identisch zur Itemliste, nur für Mobs) ============ -->
+    <main id="mobs-view" class="app-shell items-shell" hidden>
+      <header class="site-header items-header">
+        <a class="brand" href="#" aria-label="Rad der Challenges – Startseite">
+          <img src="title-mark.svg" alt="" />
+          <span><strong>RAD DER</strong><em>CHALLENGES</em></span>
+        </a>
+        <a class="overlay-link back-to-wheel-link" href="#">← Zurück zum Rad</a>
+      </header>
+
+      <section class="items-intro">
+        <p class="eyebrow">ALLE MOBS &amp; VARIANTEN</p>
+        <h1>Die komplette Mobliste</h1>
+        <p class="intro">Jedes Minecraft-Mob – inklusive seltener Varianten (z. B. linkshändige Skelette, geladene Creeper, Katzen-/Wolf-/Pferdetexturen, biomabhängige Dorfbewohner) sowie eigene Custom-Mobs. Alphabetisch sortiert, durchsuchbar und einzeln ins Rad aufnehmbar.</p>
+        <p class="anleitung">Anleitung: Nutze die Suchleiste, um nach Namen zu suchen. Über die Filter grenzt du nach Kategorie (Vanilla/Custom) oder Welt ein. Der Schalter rechts an jedem Eintrag bestimmt, ob das Mob ziehbar (an) oder ausgeschlossen (aus) ist. Seltene Varianten (z. B. Der Todeshase, geladener Creeper, Wither) sind enthalten, aber standardmäßig deaktiviert.</p>
+      </section>
+
+      <section class="items-toolbar">
+        <div class="items-search-wrap">
+          <input id="mobs-search" type="search" class="items-search" placeholder="Mob suchen …" autocomplete="off" />
+        </div>
+        <div class="items-filters">
+          <select id="mob-filter-category" class="items-select" aria-label="Nach Kategorie filtern">
+            <option value="all">Alle Kategorien</option>
+            <option value="vanilla">Nur Vanilla-Mobs</option>
+            <option value="custom">Nur Custom-Mobs</option>
+          </select>
+          <select id="mob-filter-world" class="items-select" aria-label="Nach Welt filtern">
+            <option value="all">Alle Welten</option>
+            <option value="overworld">Oberwelt</option>
+            <option value="nether">Nether</option>
+            <option value="end">End</option>
+            <option value="misc">Sonstige</option>
+          </select>
+          <select id="mob-filter-state" class="items-select" aria-label="Nach Status filtern">
+            <option value="all">Alle Status</option>
+            <option value="on">Nur ziehbare</option>
+            <option value="off">Nur ausgeschlossene</option>
+          </select>
+        </div>
+        <button id="reset-mobs" class="text-button" type="button">Auswahl zurücksetzen</button>
+      </section>
+
+      <p id="mobs-count" class="items-count" aria-live="polite"></p>
+
+      <nav id="mob-letter-nav" class="letter-nav" aria-label="Alphabet-Sprungnavigation"></nav>
+
+      <div id="mobs-list" class="items-list"></div>
+    </main>
+
     <dialog id="win-dialog" class="win-dialog">
       <button id="close-dialog" class="dialog-close" type="button" aria-label="Gewinn schließen">×</button>
       <p class="eyebrow">DEINE NÄCHSTE CHALLENGE</p>
@@ -133,6 +189,7 @@
     </dialog>
 
     <script src="items-data.js"></script>
+    <script src="mobs-data.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

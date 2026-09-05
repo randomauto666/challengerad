@@ -43,6 +43,7 @@
 .mc-icon-fallback.end{background:#b69bff}
 .mc-icon-fallback.misc{background:#8f89a3}
 .mc-icon-fallback.swatch{color:#fff;text-shadow:0 1px 2px #0008}
+.mc-icon-fallback.emoji{background:transparent;line-height:1}
 .item-text{flex:1;display:flex;flex-direction:column;min-width:0}
 .item-name{font-weight:700;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .item-meta{font-size:.68rem;color:var(--muted)}
