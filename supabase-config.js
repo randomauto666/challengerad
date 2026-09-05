@@ -6,5 +6,5 @@
    Community-Bereich (Login/Hinzufügen/Adminpanel) einfach ausgeblendet. */
 const SUPABASE_CONFIG = {
     url: 'https://tlpithftbxbgpfrhuujz.supabase.co',
-    anonKey: 'sb_publishable_pl6q7KzpjIyFZ4LFuslptg_fHhdT6-V',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRscGl0aGZ0YnhiZ3Bmcmh1dWp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MDg0MjcsImV4cCI6MjEwNDE4NDQyN30.dsXdKych5T8tDta3THEuc1cFobiuad85hGncNAQi_WI',
 };
