@@ -1,26 +1,20 @@
 /* community.js — Discord-Login (Supabase) + Community-Inhalte + Adminpanel.
    Läuft komplett im Browser, spricht direkt mit Supabase (kein eigener Server nötig,
-   die Seite bleibt eine normale statische GitHub-Pages-Seite). Wenn supabase-config.js
-   noch nicht ausgefüllt ist, blendet sich dieses komplette Feature einfach aus –
-   der Rest der Seite (Rad, Itemliste, Mobliste) funktioniert unabhängig davon normal weiter. */
+   die Seite bleibt eine normale statische GitHub-Pages-Seite). */
 (function () {
-  const cfg = window.SUPABASE_CONFIG;
-  const isConfigured =
-    cfg && cfg.url && !cfg.url.includes('https://tlpithftbxbgpfrhuujz.supabase.co') && cfg.anonKey && !cfg.anonKey.includes('sb_publishable_pl6q7KzpjIyFZ4LFuslptg_fHhdT6-V');
+  // Direkt konfigurierte Supabase-Zugangsdaten
+  const SUPABASE_URL = 'https://tlpithftbxbgpfrhuujz.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_pl6q7KzpjIyFZ4LFuslptg_fHhdT6-V';
 
   const communityEls = document.querySelectorAll('.community-feature');
 
-  if (!isConfigured || typeof window.supabase === 'undefined') {
+  if (typeof window.supabase === 'undefined') {
     communityEls.forEach(el => (el.hidden = true));
-    if (!isConfigured) {
-      console.info(
-        'Community-Feature (Discord-Login/eigene Inhalte) ist deaktiviert, weil supabase-config.js noch keine echten Zugangsdaten enthält. Siehe supabase-setup.sql für die Einrichtung.'
-      );
-    }
+    console.error('Supabase SDK (supabase.js) ist nicht im HTML eingebunden.');
     return;
   }
 
-  const sb = window.supabase.createClient(cfg.url, cfg.anonKey);
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const $ = sel => document.querySelector(sel);
   const $$ = sel => Array.from(document.querySelectorAll(sel));
   const BUCKET = 'custom-images';
@@ -115,8 +109,6 @@
 
   function syncCommunityIntoPools() {
     if (typeof MASTER_ITEMS === 'undefined' || typeof MOB_ITEMS === 'undefined') return;
-    // vorherige community_* Einträge entfernen, dann frisch einfügen (verhindert Duplikate
-    // bei wiederholtem Laden, z.B. nach Login/Logout oder neuem Eintrag).
     for (let i = MASTER_ITEMS.length - 1; i >= 0; i--) {
       if (MASTER_ITEMS[i].isCommunity) MASTER_ITEMS.splice(i, 1);
     }
